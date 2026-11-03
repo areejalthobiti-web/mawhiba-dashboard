@@ -1,0 +1,248 @@
+<title>متابعة برامج موهبة</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600&display=swap">
+<style>
+/* Layout: RTL dashboard. Filter bar on top, 4 KPI tiles, 3 charts, specialty+pivot, student table. Steel blue like the source Power BI report. */
+:root{
+  --bg:#eef2f7; --surface:#ffffff; --ink:#14233a; --ink2:#4a5a72; --muted:#8693a6; --line:#dde4ee;
+  --head:#2f6a9e; --head-ink:#ffffff; --accent:#2a78d6; --chip:#e3ebf6; --chip-on:#2f6a9e; --chip-on-ink:#fff;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+  --bar:#2f6a9e; --bar-dim:#c5d3e6; --row-alt:#f5f8fc; --shadow:0 1px 2px rgba(20,35,58,.08);
+  --font:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif; --display:'Readex Pro','IBM Plex Sans Arabic',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1824; --surface:#172536; --ink:#e8eef7; --ink2:#b4c1d4; --muted:#7f8ea5; --line:#27384d;
+  --head:#2b5d8b; --head-ink:#fff; --accent:#3987e5; --chip:#22344a; --chip-on:#3987e5; --chip-on-ink:#0b1420;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#2fa02f;
+  --bar:#3987e5; --bar-dim:#2b4059; --row-alt:#1b2c40; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1824; --surface:#172536; --ink:#e8eef7; --ink2:#b4c1d4; --muted:#7f8ea5; --line:#27384d;
+  --head:#2b5d8b; --head-ink:#fff; --accent:#3987e5; --chip:#22344a; --chip-on:#3987e5; --chip-on-ink:#0b1420;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#2fa02f;
+  --bar:#3987e5; --bar-dim:#2b4059; --row-alt:#1b2c40; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
+  padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-size:clamp(22px,3.4vw,32px);margin:2px 0 4px;font-weight:600;text-wrap:balance;color:#fff}
+.by{color:rgba(255,255,255,.8);font-size:13px}
+.banner{background:var(--head);color:#fff;border-radius:12px;padding:20px 24px;align-items:center}
+.eyebrow{font-size:13px;letter-spacing:.04em;color:rgba(255,255,255,.85)}
+.bside{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.hint{font-size:12px;color:rgba(255,255,255,.75)}
+.banner .reset{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.45)}
+.insights{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ins{background:var(--surface);border-radius:8px;box-shadow:var(--shadow);padding:12px 14px;border-top:3px solid var(--accent)}
+.ins b{font-family:var(--display);font-size:20px;font-weight:600;display:block}
+.ins span{color:var(--ink2);font-size:13px}
+.reset{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 12px;cursor:pointer}
+.reset:hover{border-color:var(--accent)}
+.reset[disabled]{opacity:.45;cursor:default}
+.filters{display:grid;grid-template-columns:2fr 1.5fr 1fr;gap:10px}
+.fg{background:var(--surface);border-radius:8px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.fg h3{margin:0;background:var(--head);color:var(--head-ink);font-size:12px;font-weight:600;padding:5px 12px;letter-spacing:.02em}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px}
+.chip{font:inherit;font-size:13px;border:0;background:var(--chip);color:var(--ink);padding:5px 12px;border-radius:6px;cursor:pointer}
+.chip:hover{outline:2px solid var(--accent)}
+.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink);font-weight:600}
+.chip.empty{opacity:.5;cursor:not-allowed}
+.chip.empty:hover{outline:0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--surface);border-radius:10px;box-shadow:var(--shadow);border:1.5px solid var(--head);padding:12px 14px;text-align:center}
+.kpi b{display:block;font-family:var(--display);font-size:34px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--ink2);font-size:13px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.card{background:var(--surface);border-radius:8px;box-shadow:var(--shadow);overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.card h2{margin:0;background:var(--head);color:var(--head-ink);font-size:14px;font-weight:600;padding:7px 12px}
+.body{padding:12px;min-width:0;flex:1}
+.donut{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.donut svg{width:170px;height:170px;flex:none}
+.legend{display:flex;flex-direction:column;gap:5px;font-size:12.5px;min-width:0;flex:1 1 130px}
+.lg{display:flex;align-items:center;gap:7px;cursor:pointer;border:0;background:none;font:inherit;color:var(--ink);text-align:start;padding:2px 4px;border-radius:4px}
+.lg:hover{background:var(--chip)}
+.lg i{width:10px;height:10px;border-radius:2px;flex:none}
+.lg em{font-style:normal;margin-inline-start:auto;font-variant-numeric:tabular-nums;color:var(--ink2);padding-inline-start:8px}
+.lg[aria-pressed="true"]{background:var(--chip);font-weight:600}
+.dim{opacity:.35}
+.bars{display:flex;flex-direction:column;gap:4px}
+.brow{display:grid;grid-template-columns:110px 1fr 34px;gap:8px;align-items:center;cursor:pointer;border:0;background:none;font:inherit;color:var(--ink);padding:2px 0;width:100%;text-align:start}
+.brow .lab{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .tr{height:16px;background:transparent;position:relative}
+.brow .fill{position:absolute;inset-block:0;inset-inline-start:0;background:var(--bar);border-radius:0 4px 4px 0;min-width:2px}
+.wrap[dir=rtl] .brow .fill{border-radius:4px 0 0 4px}
+.brow .num{font-variant-numeric:tabular-nums;color:var(--ink2);font-size:12.5px;text-align:end}
+.brow:hover .lab{color:var(--accent)}
+.brow.off .fill{background:var(--bar-dim)}
+.brow.off{opacity:.9}
+.scroll{overflow:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{background:var(--chip);color:var(--ink);font-weight:600;padding:6px 10px;text-align:start;position:sticky;top:0;white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:nth-child(even) td{background:var(--row-alt)}
+td.n,th.n{text-align:center;font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:600;border-top:2px solid var(--head)}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;background:var(--chip);font-size:12px}
+.tools{display:flex;gap:10px;align-items:center;padding:10px 12px;flex-wrap:wrap}
+.tools input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);flex:1 1 220px;min-width:0}
+.tools input:focus-visible,.chip:focus-visible,.brow:focus-visible,.lg:focus-visible,.reset:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tcount{color:var(--ink2);font-size:12.5px}
+.tblwrap{max-height:380px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);padding:4px 9px;border-radius:5px;font-size:12px;z-index:20;display:none;white-space:nowrap}
+.note{color:var(--muted);font-size:12px}
+@media (max-width:900px){.filters,.grid3,.grid2{grid-template-columns:1fr}.kpis,.insights{grid-template-columns:repeat(2,1fr)}.bside{align-items:flex-start}}
+@media (max-width:520px){.insights{grid-template-columns:1fr}.legend{max-width:240px}}
+@media (max-width:420px){.brow{grid-template-columns:84px 1fr 30px}.kpi b{font-size:28px}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .25s}}
+</style>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <header class="banner">
+    <div>
+      <div class="eyebrow">المتوسطة السادسة بالطائف</div>
+      <h1>لوحة متابعة برامج موهبة</h1>
+      <div class="by">إعداد: أريج الثبيتي · آخر تحديث للبيانات: ٣ نوفمبر ٢٠٢٦</div>
+    </div>
+    <div class="bside"><span class="hint">اضغطي على أي عنصر لتصفية اللوحة</span><button class="reset" id="reset" type="button">إلغاء التصفية</button></div>
+  </header>
+
+  <section class="filters" aria-label="الفلاتر">
+    <div class="fg"><h3>البرامج</h3><div class="chips" id="fProg"></div></div>
+    <div class="fg"><h3>حالة المشاركة</h3><div class="chips" id="fStatus"></div></div>
+    <div class="fg"><h3>الصف</h3><div class="chips" id="fGrade"></div></div>
+  </section>
+
+  <section class="insights" id="insights" aria-label="ملخص"></section>
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid3">
+    <div class="card"><h2>توزيع الطالبات حسب الصف</h2><div class="body"><div class="donut" id="dGrade"></div></div></div>
+    <div class="card"><h2>عدد الطالبات حسب البرنامج</h2><div class="body"><div class="bars" id="bProg"></div></div></div>
+    <div class="card"><h2>توزيع الطالبات حسب المشاركة</h2><div class="body"><div class="donut" id="dStatus"></div></div></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card"><h2>توزيع الطالبات حسب التخصص</h2><div class="body"><div class="bars" id="bSpec"></div></div></div>
+    <div class="card"><h2>الطالبات حسب الصف والبرنامج</h2><div class="body scroll" id="pivot"></div></div>
+  </section>
+
+  <section class="card">
+    <h2>تفاصيل الطالبات والبرامج</h2>
+    <div class="tools"><input id="q" type="search" placeholder="ابحثي باسم الطالبة" aria-label="بحث بالاسم"><span class="tcount" id="tcount"></span></div>
+    <div class="scroll tblwrap"><table><thead><tr><th>اسم الطالبة</th><th class="n">الصف</th><th>البرنامج</th><th>التخصص</th><th>حالة المشاركة</th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+  <div class="note">المصدر: ملف بيانات موهبة (جدول المشاركات). الأعداد تحسب مشاركات، وقد تشارك الطالبة في أكثر من برنامج، لذلك يظهر في وسط الدائرة عدد الطالبات دون تكرار. مشاركة المنسقة لا تدخل في عدد المشاركات.</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA=[{"id": "P001", "p": "نسمو", "n": "ديما فايز ابن هلال الثقفي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P002", "p": "نسمو", "n": "لانه هاني عبدالرحيم بلخى", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P003", "p": "نسمو", "n": "وسن علي بن عائض السالمي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P004", "p": "نسمو", "n": "يارا احمد مفرح البقمي", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P005", "p": "نسمو", "n": "لين عمر بن حمدان الزائدي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P006", "p": "نسمو", "n": "بيادر فارس بن هلال اليوسفي الثقفي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P007", "p": "نسمو", "n": "تالا بندر حسن العيشي السفياني", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P008", "p": "نسمو", "n": "شذى ضيف الله عبدالرحمن الوقداني", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P009", "p": "نسمو", "n": "ريفان عبدالله ابن عيضه العمري السفياني", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P010", "p": "نسمو", "n": "ميعاد خالد عواض العضياني الحارثي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P011", "p": "نسمو", "n": "ايلاف عبدالله محمود الثمالي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P012", "p": "نسمو", "n": "ايدال بندر مطر العتيبي", "g": "٣م", "s": "الاحياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P013", "p": "نسمو", "n": "ريتال نايف ابن عمر السفياني", "g": "٣م", "s": "الاحياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P014", "p": "نسمو", "n": "وعد عبيد عبدالله الصواط", "g": "٣م", "s": "الاحياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P015", "p": "نسمو", "n": "لانا خالد سعد الثبيتي", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P016", "p": "نسمو", "n": "ريما بندر عبدالله الثمالي", "g": "٣م", "s": "الفيزياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P017", "p": "نسمو", "n": "غلا عويض فريحان الحارثي", "g": "٣م", "s": "الاحياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P018", "p": "نسمو", "n": "نور عبدالرحمن حسن الحارثي", "g": "٣م", "s": "المعلوماتية 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P019", "p": "نسمو", "n": "جوري مشعل عائض السالمي", "g": "٣م", "s": "الكيمياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P020", "p": "نسمو", "n": "ترف مشعل احمد الثمالي", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P021", "p": "نسمو", "n": "جود عبدالخالق محمد الحارثي", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P022", "p": "نسمو", "n": "جوري خالد عيد المالكي", "g": "٢م", "s": "المعلوماتية 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P023", "p": "نسمو", "n": "حلا وائل حامد السيالي", "g": "٢م", "s": "العلوم", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P024", "p": "نسمو", "n": "ريما عبدالله محمود الثمالي", "g": "٢م", "s": "العلوم", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P025", "p": "نسمو", "n": "راما عادل ساعد الحارثي", "g": "٢م", "s": "العلوم", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P026", "p": "نسمو", "n": "تالا حسام محسن المحمدي الثقفي", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P027", "p": "نسمو", "n": "ريما حمدي حامد العيلي", "g": "٢م", "s": "العلوم", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P028", "p": "نسمو", "n": "سديم جميل حامد الثمالي", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P029", "p": "نسمو", "n": "ملكة سفر بن عايض الجعيد", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P030", "p": "نسمو", "n": "ميس خالد معيض الموسى الحارثي", "g": "٢م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P031", "p": "نسمو", "n": "نوره نايف وصل الله الثبيتي", "g": "٢م", "s": "العلوم", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P032", "p": "نسمو", "n": "أسيل علي بن عائض السالمي", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P033", "p": "نسمو", "n": "ريتال حسام محسن الثقفي", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P034", "p": "نسمو", "n": "لارا سفر علي الثبيتي", "g": "١م", "s": "العلوم", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P035", "p": "نسمو", "n": "وتين طلال محسن الحميدي", "g": "١م", "s": "المعلوماتية 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P036", "p": "نسمو", "n": "ترف صالح محمد النمري", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P037", "p": "نسمو", "n": "ماريا رائد رداد الزيداني", "g": "١م", "s": "المعلوماتية 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P038", "p": "نسمو", "n": "العنود عدنان عطاالله الثبيتي", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P039", "p": "نسمو", "n": "تولين بندر حسن السفياني", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P040", "p": "نسمو", "n": "وتين محمد عبدالعزيز الثبيتي", "g": "٣م", "s": "الاحياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P041", "p": "نسمو", "n": "بيلسان علي محمد الزهراني", "g": "٣م", "s": "الرياضيات 2", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P042", "p": "نسمو", "n": "مثايل عبدالغنى مسلم السفياني", "g": "٣م", "s": "الكيمياء", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P043", "p": "نسمو", "n": "جوانا سعيد عايض الثبيتي", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P044", "p": "نسمو", "n": "شادن تركي رده الحميدي", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P045", "p": "نسمو", "n": "مرام محمد حميد السالمي", "g": "١م", "s": "الرياضيات 1", "st": "بانتظار النتائج", "pass_": false, "reg": false}, {"id": "P046", "p": "إبداع", "n": "وسن علي بن عائض السالمي", "g": "٣م", "s": "غير محدد", "st": "مسجلة", "pass_": false, "reg": false}, {"id": "P047", "p": "إبداع", "n": "جوانا سعيد عايض الثبيتي", "g": "١م", "s": "غير محدد", "st": "مسجلة", "pass_": false, "reg": false}, {"id": "P048", "p": "إبداع", "n": "لارا سفر علي الثبيتي", "g": "١م", "s": "غير محدد", "st": "مسجلة", "pass_": false, "reg": false}, {"id": "P049", "p": "إبداع", "n": "ميس خالد معيض الموسى الحارثي", "g": "٢م", "s": "غير محدد", "st": "مسجلة", "pass_": false, "reg": false}, {"id": "P050", "p": "إبداع", "n": "ديالا عبدالله هادي العمري", "g": "١م", "s": "غير محدد", "st": "مسجلة", "pass_": false, "reg": false}, {"id": "P051", "p": "مقياس موهبة", "n": "وسن علي بن عائض السالمي", "g": "٣م", "s": "غير محدد", "st": "اجتازت مقياس موهبة", "pass_": true, "reg": false}, {"id": "P052", "p": "مقياس موهبة", "n": "ديما فايز ابن هلال الثقفي", "g": "٣م", "s": "غير محدد", "st": "اجتازت مقياس موهبة", "pass_": true, "reg": false}, {"id": "P053", "p": "مقياس موهبة", "n": "ايدال بندر مطر العتيبي", "g": "٣م", "s": "غير محدد", "st": "اجتازت مقياس موهبة", "pass_": true, "reg": false}, {"id": "P054", "p": "مقياس موهبة", "n": "ديما فايز ابن هلال الثقفي", "g": "٣م", "s": "غير محدد", "st": "مسجلة لاختبار هذا العام", "pass_": false, "reg": true}, {"id": "P055", "p": "مقياس موهبة", "n": "لين عمر بن حمدان الزائدي", "g": "٣م", "s": "غير محدد", "st": "مسجلة لاختبار هذا العام", "pass_": false, "reg": true}, {"id": "P056", "p": "مقياس موهبة", "n": "مرام محمد حميد السالمي", "g": "١م", "s": "غير محدد", "st": "مسجلة لاختبار هذا العام", "pass_": false, "reg": true}, {"id": "P057", "p": "مقياس موهبة", "n": "لارا سفر علي الثبيتي", "g": "١م", "s": "غير محدد", "st": "مسجلة لاختبار هذا العام", "pass_": false, "reg": true}, {"id": "P058", "p": "سيف", "n": "مرام محمد حميد السالمي", "g": "١م", "s": "غير محدد", "st": "مشاركة", "pass_": false, "reg": false}, {"id": "P059", "p": "سيف", "n": "ريماس الصغير", "g": "٣م", "s": "غير محدد", "st": "مشاركة", "pass_": false, "reg": false}, {"id": "P060", "p": "سيف", "n": "حنان الجيد", "g": "٣م", "s": "غير محدد", "st": "مشاركة", "pass_": false, "reg": false}, {"id": "P061", "p": "سيف", "n": "الصباحي", "g": "٣م", "s": "غير محدد", "st": "مشاركة", "pass_": false, "reg": false}, {"id": "P062", "p": "سيف", "n": "وسن علي بن عائض السالمي", "g": "٣م", "s": "غير محدد", "st": "مشاركة", "pass_": false, "reg": false}, {"id": "P063", "p": "سيف", "n": "أريج الثبيتي", "g": "غير محدد", "s": "غير محدد", "st": "مشاركة — المنسقة", "pass_": false, "reg": false}];
+const ALL_PROGRAMS=["نسمو","مقياس موهبة","كانجارو","بيبراس","سيف","التعلم باللعب","إبداع"];
+const COORD="مشاركة — المنسقة";
+const STATUS_ORDER=["بانتظار النتائج","مسجلة","مشاركة","مسجلة لاختبار هذا العام","اجتازت مقياس موهبة"];
+const GRADE_ORDER=["١م","٢م","٣م","غير محدد"];
+const COLORS=["--s1","--s2","--s3","--s4","--s5","--s6"];
+const F={p:null,st:null,g:null,s:null};   // single-select per dimension
+const KEY={p:"p",st:"st",g:"g",s:"s"};
+const $=id=>document.getElementById(id);
+const tip=$("tip");
+
+function rowsExcept(skip){
+  /* Filters select students: a student matches when ANY of her rows has the chosen value; then all her rows are shown. */
+  const base=DATA.filter(r=>r.st!==COORD);
+  const ks=["p","st","g","s"].filter(k=>k!==skip&&F[k]!==null);
+  if(!ks.length)return base;
+  const ok=ks.map(k=>new Set(base.filter(r=>r[KEY[k]]===F[k]).map(r=>r.n)));
+  return base.filter(r=>ok.every(s=>s.has(r.n)));
+}
+function toggle(k,v){F[k]=F[k]===v?null:v;render()}
+function countBy(rows,k){const m=new Map();rows.forEach(r=>m.set(r[k],(m.get(r[k])||0)+1));return m}
+function distinct(rows){return new Set(rows.map(r=>r.n)).size}
+function showTip(e,t){tip.textContent=t;tip.style.display="block";tip.style.left=Math.min(e.clientX+12,innerWidth-tip.offsetWidth-8)+"px";tip.style.top=(e.clientY+14)+"px"}
+function hideTip(){tip.style.display="none"}
+function bindTip(el,t){el.addEventListener("mousemove",e=>showTip(e,t));el.addEventListener("mouseleave",hideTip)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function chips(host,k,values,counts){
+  host.innerHTML="";
+  values.forEach(v=>{
+    const n=counts.get(v)||0, b=document.createElement("button");
+    b.type="button";b.className="chip";b.textContent=v;
+    b.setAttribute("aria-pressed",F[k]===v);
+    if(n===0&&F[k]!==v&&k==="p"){b.classList.add("empty");b.title="بانتظار إدخال الأسماء"}
+    else b.onclick=()=>toggle(k,v);
+    host.appendChild(b)});
+}
+function bars(host,k,order,rows,all){
+  const m=countBy(rows,k), max=Math.max(1,...m.values());
+  host.innerHTML="";
+  order.filter(v=>(all.get(v)||0)>0).forEach(v=>{
+    const n=m.get(v)||0,b=document.createElement("button");
+    b.type="button";b.className="brow"+(F[k]!==null&&F[k]!==v?" off":"");
+    b.innerHTML=`<span class="lab" title="${esc(v)}">${esc(v)}</span><span class="tr"><span class="fill" style="width:${n/max*100}%"></span></span><span class="num">${n}</span>`;
+    b.onclick=()=>toggle(k,v);bindTip(b,`${v}: ${n} طالبة`);host.appendChild(b)});
+}
+function donut(host,k,order,rows,all){
+  const m=countBy(rows,k), total=[...m.values()].reduce((a,b)=>a+b,0), R=64,r=42,C=85;
+  let a0=-Math.PI/2,paths="";
+  const vals=order.filter(v=>(all.get(v)||0)>0);
+  vals.forEach((v,i)=>{
+    const n=m.get(v)||0;if(!n)return;
+    const a1=a0+n/total*2*Math.PI-(n===total?0.0001:0),big=a1-a0>Math.PI?1:0;
+    const p=(rad,a)=>[C+rad*Math.cos(a),C+rad*Math.sin(a)].map(x=>x.toFixed(2)).join(" ");
+    const d=`M${p(R,a0)} A${R} ${R} 0 ${big} 1 ${p(R,a1)} L${p(r,a1)} A${r} ${r} 0 ${big} 0 ${p(r,a0)}Z`;
+    const dim=F[k]!==null&&F[k]!==v;
+    paths+=`<path d="${d}" data-v="${esc(v)}" fill="var(${COLORS[i%6]})" stroke="var(--surface)" stroke-width="2" opacity="${dim?.3:1}" style="cursor:pointer"/>`;
+    a0=a1});
+  host.innerHTML=`<svg viewBox="0 0 170 170" role="img" aria-label="رسم دائري">${paths}<text x="85" y="88" text-anchor="middle" font-size="26" font-weight="600" fill="var(--ink)" font-family="var(--display)">${distinct(rows)}</text><text x="85" y="106" text-anchor="middle" font-size="11" fill="var(--ink2)">طالبة</text></svg><div class="legend"></div>`;
+  const lg=host.querySelector(".legend");
+  vals.forEach((v,i)=>{const n=m.get(v)||0,b=document.createElement("button");b.type="button";b.className="lg";
+    b.setAttribute("aria-pressed",F[k]===v);
+    b.innerHTML=`<i style="background:var(${COLORS[i%6]})"></i><span>${esc(v)}</span><em>${n}</em>`;
+    b.onclick=()=>toggle(k,v);lg.appendChild(b)});
+  host.querySelectorAll("path").forEach(p=>{const v=p.dataset.v;p.onclick=()=>toggle(k,v);bindTip(p,`${v}: ${m.get(v)||0} مشاركة`)});
+}
+function pivot(rows){
+  const progs=ALL_PROGRAMS.filter(p=>DATA.some(r=>r.p===p));
+  const cell=(g,p)=>rows.filter(r=>r.g===g&&r.p===p).length;
+  let h=`<table><thead><tr><th>الصف</th>${progs.map(p=>`<th class="n">${esc(p)}</th>`).join("")}<th class="n">المجموع</th></tr></thead><tbody>`;
+  GRADE_ORDER.filter(g=>rows.some(r=>r.g===g)).forEach(g=>{
+    h+=`<tr><td>${g}</td>${progs.map(p=>`<td class="n">${cell(g,p)||""}</td>`).join("")}<td class="n">${rows.filter(r=>r.g===g).length}</td></tr>`});
+  h+=`<tr class="tot"><td>المجموع</td>${progs.map(p=>`<td class="n">${rows.filter(r=>r.p===p).length||""}</td>`).join("")}<td class="n">${rows.length}</td></tr></tbody></table>`;
+  $("pivot").innerHTML=h;
+}
+function render(){
+  const cur=rowsExcept(null);
+  const cnt=k=>countBy(rowsExcept(k),k), allc=k=>countBy(DATA.filter(r=>r.st!==COORD),k);
+  chips($("fProg"),"p",ALL_PROGRAMS,allc("p"));
+  chips($("fStatus"),"st",STATUS_ORDER,allc("st"));
+  chips($("fGrade"),"g",GRADE_ORDER.filter(g=>g!=="غير محدد"),allc("g"));
+  // KPIs
+  const regd=cur.filter(r=>r.p==="إبداع"||(r.p==="مقياس موهبة"&&r.reg));
+  const K=[[cur.length,"عدد المشاركات"],[distinct(regd),"مسجلات في إبداع أو المقياس"],
+    [distinct(cur.filter(r=>r.pass_)),"اجتزن المقياس"],[cur.filter(r=>r.p==="نسمو"&&r.st==="بانتظار النتائج").length,"نسمو بانتظار النتائج"]];
+  $("kpis").innerHTML=K.map(([n,l])=>`<div class="kpi"><span>${l}</span><b>${n}</b></div>`).join("");
+  const specOrder=[...new Set(DATA.map(r=>r.s))].sort((a,b)=>(a==="غير محدد")-(b==="غير محدد")||(allc("s").get(b)||0)-(allc("s").get(a)||0));
+  donut($("dGrade"),"g",GRADE_ORDER,rowsExcept("g"),allc("g"));
+  bars($("bProg"),"p",ALL_PROGRAMS,rowsExcept("p"),allc("p"));
+  donut($("dStatus"),"st",STATUS_ORDER,rowsExcept("st"),allc("st"));
+  bars($("bSpec"),"s",specOrder,rowsExcept("s"),allc("s"));
+  pivot(cur);
+  // table
+  const q=$("q").value.trim();
+  const list=cur.filter(r=>!q||r.n.includes(q));
+  $("tcount").textContent=list.length+" سجل";
+  $("tbody").innerHTML=list.map(r=>`<tr><td>${esc(r.n)}</td><td class="n">${esc(r.g)}</td><td>${esc(r.p)}</td><td>${esc(r.s)}</td><td><span class="pill">${esc(r.st)}</span></td></tr>`).join("");
+  const ra=DATA.filter(r=>r.st!==COORD),stu=distinct(ra),nas=new Set(ra.filter(r=>r.p==="نسمو").map(r=>r.n)).size;
+  const passN=distinct(ra.filter(r=>r.pass_)),regN=distinct(ra.filter(r=>r.reg)),wait=ALL_PROGRAMS.filter(p=>!ra.some(r=>r.p===p));
+  $("insights").innerHTML=[[stu+" طالبة",`شاركن في ${ra.length} مشاركة عبر ${ALL_PROGRAMS.length-wait.length} برامج`],
+    [Math.round(nas/stu*100)+"%",`من الطالبات في نسمو (${nas} طالبة)، والنتائج قيد الانتظار`],
+    [passN+" طالبات",`اجتزن مقياس موهبة، و${regN} مسجلات لاختباره هذا العام`],
+    [wait.length+" برامج",`بانتظار إدخال الأسماء: ${wait.join("، ")}`]].map(([a,b])=>`<div class="ins"><b>${a}</b><span>${b}</span></div>`).join("");
+  $("reset").disabled=Object.values(F).every(v=>v===null);
+}
+$("reset").onclick=()=>{F.p=F.st=F.g=F.s=null;render()};
+$("q").addEventListener("input",render);
+render();
+</script>
